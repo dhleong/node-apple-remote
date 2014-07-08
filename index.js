@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
 var util = require('util')
   , events = require('events')
