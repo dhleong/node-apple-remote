@@ -81,24 +81,38 @@ function open() {
     if (!info)
         throw new Error("Could not find Apple IR device");
 
-    return new Remote(new HID.HID(info.path));
+    return new HID.HID(info.path);
 }
 
 /**
- * Public-facing class; accessed via open()
+ * Public-facing class; accessed via open().
+ * Remote is an EventEmitter. It is not
+ * recommended to call removeAllListeners()
+ * on this object
  */
 function Remote(device) {
     this.device = device;
-    this._registered = false;
-    this.on('newListener', this._register);
+    this._resetListeners();
 }
 util.inherits(Remote, events.EventEmitter);
+
+Remote.prototype._resetListeners = function() {
+    this.removeAllListeners();
+    this._registered = false;
+    this.on('newListener', this._register);
+};
+
 
 Remote.prototype._register = function() {
 
     if (this._registered)
         return;
     this._registered = true;
+
+    if (!this.device) {
+        // we must've closed... re-open!
+        this.device = open();
+    }
 
     var self = this;
     this.device.on('data', function(data) {
@@ -122,5 +136,45 @@ Remote.prototype._register = function() {
     });
 };
 
-module.exports = open();
+/**
+ * Pause events. No listeners will be fired
+ *  until resume() is called (but listeners
+ *  will stay attached, unlike close()).
+ *
+ * Unfortunately, it does NOT seem to relinquish
+ *  control of the device, so nobody else will
+ *  get events, either. If you want OSX to handle
+ *  the remote's events, you're better off
+ *  just calling close()
+ *
+ */
+Remote.prototype.pause = function() {
+    this.device.pause();
+};
+
+/**
+ * Resume events
+ */
+Remote.prototype.resume = function() {
+    this.device.resume();
+};
+
+
+
+/**
+ * Closes the device; all listeners are detached
+ *  and no events will be fired until new ones
+ *  are re-attached
+ */
+Remote.prototype.close = function() {
+    // unregister listeners to prevent segfault
+    this.device.removeAllListeners();
+    this.device.close();
+    this.device = null;
+
+    this._resetListeners();
+};
+
+
+module.exports = new Remote(open());
 module.exports.Buttons = Buttons;
