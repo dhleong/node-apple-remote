@@ -168,8 +168,10 @@ Remote.prototype.resume = function() {
  */
 Remote.prototype.close = function() {
     // unregister listeners to prevent segfault
-    this.device.removeAllListeners();
-    this.device.close();
+    if (this.device) {
+        this.device.removeAllListeners();
+        this.device.close();
+    }
     this.device = null;
 
     this._resetListeners();
