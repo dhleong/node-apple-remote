@@ -3,9 +3,9 @@ node-apple-remote
 
 Simple node.js library for receiving events from an aluminum Apple Remote
 
+### Usage
 
-Usage
------
+[![NPM](https://nodei.co/npm/node-apple-remote.png?mini=true)](https://nodei.co/npm/node-apple-remote/)
 
 ```javascript
 try {
@@ -21,17 +21,17 @@ try {
 }
 ```
 
-All events
-----------
+### All events
 
 ```javascript
-'raw'    // Every single event; the Button pressed is passed.
-         // it is unlikely you will need this
-'button' // Each parsed button event; for example, 'left'
-         //  will never have a 'left.released' follow it,
-         //  though a 'raw' Released event may fire. In
-         //  most cases, it may be easiest to register
-         //  specific listeners
+'raw'                  // Every single event; the Button pressed is passed.
+                       // it is unlikely you will need this
+'button'               // Each parsed button event; for example, 'left'
+                       //  will never have a 'left.released' follow it,
+                       //  though a 'raw' Released event may fire. In
+                       //  most cases, it may be easiest to register
+                       //  specific listeners (below)
+
 'left'                 // single-press
 'left.long'            // long-press (as in rewind); release to follow
 'left.long.released'   // release of long-press 
