@@ -116,7 +116,15 @@ Remote.prototype._register = function() {
 
     var self = this;
     this.device.on('data', function(data) {
-        var button = Button.from(data);
+        try {
+            var button = Button.from(data);
+        } catch (e) {
+            var thrown = new Error("Unable to parse remote data");
+            thrown.data = data;
+            self.emit('warning', thrown);
+            return;
+        }
+
         self.emit('raw', button);
 
         if (button != Buttons.Released
