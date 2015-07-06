@@ -1,6 +1,6 @@
 {
   "name": "node-apple-remote",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Simple event-driven interface to Aluminum Apple Remote",
   "main": "index.js",
   "repository": {
@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/dhleong/node-apple-remote",
   "dependencies": {
-    "node-hid": "^0.3.1"
+    "node-hid": "^0.4.0"
   }
 }
