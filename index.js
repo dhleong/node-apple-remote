@@ -135,6 +135,7 @@ Remote.prototype._register = function() {
         } 
 
         if (button == Buttons.Released
+                && self.previous
                 && self.previous.holdable) {
 
             self.emit(self.previous.name.toLowerCase() + '.released');
