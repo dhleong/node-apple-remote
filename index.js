@@ -143,6 +143,11 @@ Remote.prototype._register = function() {
 
         self.previous = button;
     });
+
+    this.device.on('error', function(e) {
+        // just forward along
+        self.emit('error', e);
+    });
 };
 
 /**

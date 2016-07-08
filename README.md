@@ -5,7 +5,7 @@ Simple node.js library for receiving events from an aluminum Apple Remote
 
 ### Usage
 
-[![NPM](https://nodei.co/npm/node-apple-remote.png?mini=true)](https://nodei.co/npm/node-apple-remote/)
+[![NPM](https://nodei.co/npm/node-apple-remote.png?mini=true)][1]
 
 ```javascript
 try {
@@ -50,4 +50,16 @@ try {
 'playpause.long'
 'menu'
 'menu.long'
+
+'error'                // emits with the an error Object from node-hid
 ```
+
+### node-apple-remote and Electron/NW.js
+
+If using this library with [Electron][2] or [NW.js][3], see the 
+[notes from node-hid][4].
+
+[1]: https://nodei.co/npm/node-apple-remote/
+[2]: http://electron.atom.io/
+[3]: http://nwjs.io
+[4]: https://github.com/node-hid/node-hid#using-node-hid-in-electron-projects
