@@ -8,13 +8,15 @@ Simple node.js library for receiving events from an aluminum Apple Remote
 [![NPM](https://nodei.co/npm/node-apple-remote.png?mini=true)][1]
 
 ```javascript
+var AppleRemote = require('node-apple-remote');
+var remote = new AppleRemote();
 try {
-    require('node-apple-remote')
-        .on('left', /* ... */)
-        .on('left.long', /* ... */)
-        .on('left.long.released', /* ... */)
-        .on('center', /* ... */)
-        .on('center.long', /* ... */)
+    remote.open()
+          .on('left', /* ... */)
+          .on('left.long', /* ... */)
+          .on('left.long.released', /* ... */)
+          .on('center', /* ... */)
+          .on('center.long', /* ... */)
 } catch (e) {
     // an exception is thrown if the apple remote
     //  device was not found on the system

@@ -46,12 +46,12 @@ function _register(key, button) {
 
     ButtonsIndex[button.data1][button.data2][button.data3] = button;
 
-    if (button.Long)
+    if (button.Long) {
         _register(key + '.Long', button.Long);
+    }
 }
 
 Object.keys(Buttons).forEach(function(key) {
-    
     var button = Buttons[key];
     _register(key, button);
 });
@@ -78,41 +78,38 @@ function find() {
 
 function open() {
     var info = find();
-    if (!info)
-        throw new Error("Could not find Apple IR device");
+    if (!info) throw new Error("Could not find Apple IR device");
 
     return new HID.HID(info.path);
 }
 
 /**
- * Public-facing class; accessed via open().
- * Remote is an EventEmitter. It is not
- * recommended to call removeAllListeners()
- * on this object
+ * Remote is an EventEmitter. To begin receiving events, you must call open().
+ *
+ * @param opts Object An options object:
+ *   - suppressErrors: (default: true) If `true`, any errors emitted by the
+ *                      device will trigger a close and re-open, transparently.
+ *                      Otherwise, errors will be emitted as `error`.
  */
-function Remote(device) {
-    this.device = device;
-    this._resetListeners();
+function Remote(opts) {
+    this.opts = Object.assign({
+        suppressErrors: true
+    }, opts);
 }
 util.inherits(Remote, events.EventEmitter);
 
-Remote.prototype._resetListeners = function() {
-    this.removeAllListeners();
-    this._registered = false;
-    this.on('newListener', this._register);
-};
+/**
+ * Attempt to open the AppleRemote device.
+ * @throws Error if no Apple IR device was
+ *  found on the system
+ * @throws Error if already open
+ * @return this Same instance for chaining
+ */
+Remote.prototype.open = function() {
+    if (this.device) throw new Error("Already open");
 
-
-Remote.prototype._register = function() {
-
-    if (this._registered)
-        return;
-    this._registered = true;
-
-    if (!this.device) {
-        // we must've closed... re-open!
-        this.device = open();
-    }
+    // open; throws Error if no device found
+    this.device = open();
 
     var self = this;
     this.device.on('data', function(data) {
@@ -145,9 +142,29 @@ Remote.prototype._register = function() {
     });
 
     this.device.on('error', function(e) {
-        // just forward along
-        self.emit('error', e);
+        if (self.opts.suppressErrors) {
+            // NB: this is experimental, because it takes *hours*
+            //  (days?) for the repro to occur. My suspicion is that
+            //  one of two things happen when the read error is thrown:
+            //   1. The device is closed, and trying to close() it will
+            //      throw an error
+            //   2. The device can be closed safely.
+            // This try-catch should handle both cases, and dump a
+            //  message into the console if case 1 occured
+            try {
+                self.close();
+            } catch (e) {
+                console.warn(e);
+                self.device = null;
+            }
+            self.open();
+        } else {
+            // just forward along
+            self.emit('error', e);
+        }
     });
+
+    return this;
 };
 
 /**
@@ -161,24 +178,29 @@ Remote.prototype._register = function() {
  *  the remote's events, you're better off
  *  just calling close()
  *
+ * @throws Error if not open. 
  */
 Remote.prototype.pause = function() {
+    if (!this.device) throw new Error("Not open()'d yet");
     this.device.pause();
 };
 
 /**
  * Resume events
+ *
+ * @throws Error if not open. 
+ * @see #pause()
  */
 Remote.prototype.resume = function() {
+    if (!this.device) throw new Error("Not open()'d yet");
     this.device.resume();
 };
 
 
 
 /**
- * Closes the device; all listeners are detached
- *  and no events will be fired until new ones
- *  are re-attached
+ * Closes the device; any registered listeners
+ *  will remain registered
  */
 Remote.prototype.close = function() {
     // unregister listeners to prevent segfault
@@ -187,10 +209,8 @@ Remote.prototype.close = function() {
         this.device.close();
     }
     this.device = null;
-
-    this._resetListeners();
 };
 
 
-module.exports = new Remote(open());
+module.exports = Remote;
 module.exports.Buttons = Buttons;
